@@ -36,7 +36,6 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     public int authorPosition;
     ArrayList<Clip> clips = new ArrayList<>();
     ArrayList<String> authorIDs = new ArrayList<String>();
-    ArrayList<String> allAuthorIDs = new ArrayList<String>();
     ArrayList<String> authorNames = new ArrayList<String>();
     ArrayList<User> users = new ArrayList<>();
     ArrayList<String> clipID = new ArrayList<String>();
@@ -76,6 +75,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         mPlay = (Button) findViewById(R.id.playButton);
         mPause = (Button) findViewById(R.id.pauseButton);
         mStop = (Button) findViewById(R.id.stopButton);
+
         /** Initializing YouTube Player View **/
         YouTubePlayerView youTubePlayerView = (YouTubePlayerView) findViewById(R.id.youtube_player);
         youTubePlayerView.initialize(API_KEY, this);
@@ -94,8 +94,6 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
 
         clips = clip.getClips(mClips);
 
-        int j = 0;
-        int value = 0;
         if (clips != null){
             for (int i=0;i<clips.size();i++) {
                 String clipAuthor = null;
@@ -109,49 +107,16 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                         users = clip.getUsers(mUsers);
                         authorIDForAuthorName.put(clipAuthor, users.get(0).userHandle);
                     }
-
-                    //get author IDs of all the clips for the loaded movie
-                    allAuthorIDs.add(j, clipAuthor);
-                    //value = Integer.parseInt(clipsAuthors.get(temp));
-                    //clipsAuthors.put(temp, String.valueOf(value++));
-
-                    //retrieve unique author IDs
-                    if(!authorIDs.contains(clipAuthor)){
-                        authorIDs.add(clipAuthor);
-                    }
-                    j++;
                 }
             }
-        }
-
-        /*if (authorIDs != null){
-            for(int i=0;i<authorIDs.size();i++){
-                final String author_ID = authorIDs.get(i);
-                HashMap<String, String> mUsers = new HashMap<String, String>() {{
-                    put("UserId", author_ID);
-                }};
-                users = clip.getUsers(mUsers);
-                String temp = null;
-                temp = users.get(0).userHandle;
-                authorNames.add(i,temp);
+            for(String authorId : authorIDForAuthorName.keySet()){
+                authorNames.add(authorIDForAuthorName.get(authorId));
             }
-        }*/
-
-        for(String authorId : authorIDForAuthorName.keySet()){
-            authorNames.add(authorIDForAuthorName.get(authorId));
-        }
-
-        /*for(int i=0; i<authorNames.size(); i++){
-            String name = authorNames.get(i);
-            if (name == AUTHOR_NAME){
-                authorPosition = i;
-            }
-        }*/
-
-        List<String> indexes = new ArrayList<String>(authorIDForAuthorName.keySet()); // <== Set to List
-        for (String authorId : indexes){
-            if (Integer.parseInt(authorId) == Integer.parseInt(AUTHOR_ID)){
-                authorPosition = indexes.indexOf(authorId);
+            List<String> indexes = new ArrayList<String>(authorIDForAuthorName.keySet());
+            for (String authorId : indexes) {
+                if (Integer.parseInt(authorId) == Integer.parseInt(AUTHOR_ID)) {
+                    authorPosition = indexes.indexOf(authorId);
+                }
             }
         }
 
@@ -170,22 +135,15 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                 downloadURLs.clear();
                 clipID.clear();
                 clipStartTime.clear();
-                chosenAuthor = authorIDs.get(position);
+                List<String> indexes = new ArrayList<String>(authorIDForAuthorName.keySet());
+                chosenAuthor = indexes.get(position);
                 int j = 0;
                 for (int i=0; i<clips.size(); i++){
-                    String clipAuthor = null;
-                    String clipIDString;
-                    String clipStartTimeString;
-                    clipAuthor = clips.get(i).clipAuthor;
-                    if ((clipAuthor != "") && (clipAuthor != null)) {
-                        if(Integer.parseInt(clipAuthor) == Integer.parseInt(chosenAuthor)){
-                            clipIDString = clips.get(i).clipId;
-                            clipID.add(j, clipIDString);
-                            clipStartTimeString = clips.get(i).clipStartTime;
-                            clipStartTime.add(j, clipStartTimeString);
-                            //Log.d("downloading:", clipID.get(j));
-                            //clip.downloadClips(MEDIA_ID, clipID.get(j), PlayVideo.this);
-                            //Toast.makeText(PlayVideo.this, "Please wait for clips to be downloaded", Toast.LENGTH_LONG).show();
+                    Clip clipMovie = clips.get(i);
+                    if ((clipMovie.clipAuthor != "") && (clipMovie.clipAuthor != null)) {
+                        if(Integer.parseInt(clipMovie.clipAuthor) == Integer.parseInt(chosenAuthor)){
+                            clipID.add(j, clipMovie.clipId);
+                            clipStartTime.add(j, clipMovie.clipStartTime);
                             downloadURLs.add(j,apiBaseUrl + "clip?AppId=" + defaultAppId + "&Movie=" + MEDIA_ID + "&ClipId=" + clipID.get(j));
                             j++;
                         }

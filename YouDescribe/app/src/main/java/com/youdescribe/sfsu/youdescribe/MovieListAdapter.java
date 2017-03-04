@@ -1,6 +1,7 @@
 package com.youdescribe.sfsu.youdescribe;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,21 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by madhura on 12/24/2016.
@@ -25,6 +40,10 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Movie> mDataSource;
     private ArrayList<Movie> mOriginalValues;
     private ArrayList<Movie> mDisplayedValues;
+    int maxYouTubeResults = 5;
+    String apiKey = "AIzaSyAI9H-v1Zyt1bN6W7fSz-Zl0jrfU0UYzho";
+    String youTubeURLString = "https://www.googleapis.com/youtube/v3/search?part=snippet&fields=items(id,snippet(title,channelTitle))&type=video&maxResults=" + maxYouTubeResults + "&key=" + apiKey + "&q=";
+
 
     public MovieListAdapter(Context context, ArrayList<Movie> items) {
         mContext = context;
@@ -76,7 +95,7 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
         if (movie.isDescribed){
             subtitleTextView.setText("Described by " + movie.authorName);
         }else{
-            subtitleTextView.setText("");
+            subtitleTextView.setText("Not Described");
         }
 
         //4
@@ -106,12 +125,6 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
                     mOriginalValues = new ArrayList<Movie>(mDataSource); // saves the original data in mOriginalValues
                 }
 
-                /********
-                 *
-                 *  If constraint(CharSequence that is received) is null returns the mOriginalValues(Original) values
-                 *  else does the Filtering and returns FilteredArrList(Filtered)
-                 *
-                 ********/
                 if (constraint == null || constraint.length() == 0) {
                     // set the Original result to return
                     results.values = mOriginalValues;
@@ -136,6 +149,23 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
                             FilteredArrList.add(tempObj);
                         }
                     }
+
+                    //youtube search
+                    ArrayList<Movie> youTubeMovies = new ArrayList<Movie>();
+                    try {
+                        if(constraint.toString().contains(" ")){
+                            constraint.toString().replace(" ","+");
+                        }
+                        youTubeMovies = new YouTubeVideosSearch().execute(youTubeURLString+constraint).get();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                    for (int i=0; i<youTubeMovies.size();i++){
+                        FilteredArrList.add(youTubeMovies.get(i));
+                    }
+
                     // set the Filtered result to return
                     results.values = FilteredArrList;
                     results.count = FilteredArrList.size();
@@ -144,6 +174,73 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
             }
         };
         return filter;
+    }
+
+    private class YouTubeVideosSearch extends AsyncTask<String, Void, ArrayList> {
+
+        DocumentBuilder db = null;
+        ArrayList<Movie> ytSearchedMovie = new ArrayList<Movie>();
+
+        @Override
+        protected ArrayList doInBackground(String... params) {
+            String urlString = params[0];
+
+            String responseString = "";
+            URLConnection connection = null;
+            JSONArray items = null;
+            JSONObject jObject = null;
+
+            try {
+                db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            }
+            InputStream response = new InputStream() {
+                @Override
+                public int read() throws IOException {
+                    return 0;
+                }
+            };
+            try {
+                connection = new URL(urlString).openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            connection.setRequestProperty("Accept-Charset", "UTF-8");
+            try {
+                response = connection.getInputStream();
+                responseString = IOUtils.toString(response, "UTF-8");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                jObject  = new JSONObject(responseString);
+                items = jObject.getJSONArray("items");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            for(int i = 0; i<maxYouTubeResults ; i++){
+                Movie searchedYTVideo = new Movie();
+                try {
+                    JSONObject id = items.getJSONObject(i).getJSONObject("id");
+                    searchedYTVideo.movieMediaId = id.getString("videoId");
+                    JSONObject snippet = items.getJSONObject(i).getJSONObject("snippet");
+                    searchedYTVideo.movieName = snippet.getString("title");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                ytSearchedMovie.add(searchedYTVideo);
+            }
+
+            return ytSearchedMovie;
+
+        }
+
+        protected void onPostExecute(ArrayList result) {
+            super.onPostExecute(result);
+        }
     }
 
 }

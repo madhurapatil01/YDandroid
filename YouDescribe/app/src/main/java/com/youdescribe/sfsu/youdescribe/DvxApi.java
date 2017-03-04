@@ -64,7 +64,8 @@ public class DvxApi extends Context {
 
     final Context mContext = this;
     private String defaultAppId = "ydesc";
-    private String apiBaseUrl = "http://dvxtest.ski.org:8080/dvx2Api/";
+    private String apiBaseUrl = "http://dvxtest.ski.org:8080/dvx2Api/"; //test
+    //private String apiBaseUrl = "http://dvx.ski.org:8080/dvx2Api/"; //main
     Document mainDoc = null;
     ArrayList<Movie> searchTableMovies = new ArrayList<>();
     ArrayList<Movie> movies = new ArrayList<Movie>();
@@ -364,6 +365,11 @@ public class DvxApi extends Context {
         }catch (JSONException e) {
             e.printStackTrace();
         }
+        try{
+            movie.authorID = movies.getString("movieAuthor");
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
         try {
             movie.movieDescription = movies.getString("movieDescription");
         } catch (JSONException e) {
@@ -585,18 +591,6 @@ public class DvxApi extends Context {
                         Log.d("download:", String.valueOf(f));
                     }while (!f.exists());
                 }
-                //return downloadReference;
-                /*BroadcastReceiver receiver = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        String action = intent.getAction();
-                        while (!DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
-                            Log.d("downloading:", String.valueOf(f));
-                        }
-                    }
-                };
-                registerReceiver(receiver, new IntentFilter(
-                        DownloadManager.ACTION_DOWNLOAD_COMPLETE));*/
             }
             return null;
         }
@@ -610,7 +604,6 @@ public class DvxApi extends Context {
     public void downloadClips(String mediaID, String clipID, Activity activity){
         Uri audioClip_uri = Uri.parse(apiBaseUrl + "clip?AppId=" + defaultAppId + "&Movie=" + mediaID + "&ClipId=" + clipID);
         this.activity = activity;
-        //new DownloadTask().execute(mediaID,clipID);
         long downloadReference = downloadData(audioClip_uri, clipID, activity);
     }
 
