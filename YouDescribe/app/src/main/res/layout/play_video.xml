@@ -34,7 +34,8 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:textColor="@color/colorPrimary"
-        android:background="@color/colorAccent"/>
+        android:background="@color/colorAccent"
+        android:enabled="false"/>
 
     <Button
         android:text="Pause"
@@ -45,32 +46,31 @@
         android:layout_alignBottom="@+id/playButton"
         android:layout_centerHorizontal="true"
         android:textColor="@color/colorPrimary"
-        android:background="@color/colorAccent"/>
+        android:background="@color/colorAccent"
+        android:enabled="false"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/playButton"
-        android:layout_marginTop="29dp"
         android:text="Play"
-        android:layout_below="@+id/youtube_player"
+        android:textColor="@color/colorPrimary"
+        android:background="@color/colorAccent"
+        android:enabled="false"
+        android:layout_above="@+id/spinner2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:textColor="@color/colorPrimary"
-        android:background="@color/colorAccent"/>
+        android:layout_marginBottom="33dp" />
 
     <TextView
         android:text="Author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
         android:id="@+id/textView"
-        android:layout_below="@+id/playButton"
+        android:textColor="@color/colorPrimary"
+        android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/playButton"
-        android:layout_toEndOf="@+id/playButton"
-        android:layout_marginLeft="20dp"
-        android:layout_marginStart="20dp"
-        android:textColor="@color/colorPrimary"/>
+        android:layout_toEndOf="@+id/playButton" />
 
 
 </RelativeLayout>

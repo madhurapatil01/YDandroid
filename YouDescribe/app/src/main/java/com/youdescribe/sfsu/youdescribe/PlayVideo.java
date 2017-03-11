@@ -4,9 +4,11 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +23,7 @@ import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +43,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     ArrayList<User> users = new ArrayList<>();
     ArrayList<String> clipID = new ArrayList<String>();
     ArrayList<String> clipStartTime = new ArrayList<String>();
+    ArrayList<String> clipFunction =  new ArrayList<String>();
     ArrayList<String> downloadURLs = new ArrayList<String>();
     HashMap<String, String> authorIDForAuthorName = new HashMap<String, String>();
     String chosenAuthor = new String();
@@ -51,11 +55,13 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     double currentTime = 0;
     double nextClipStartTime = 0;
     String nextClipID;
+    String nextClipFunction;
     int activeAudioIndex = 0;
     int numberOfClipsRemaining = 0;
     boolean isDescribed = false;
     boolean isLoaded = false;
     boolean isInitialized = false;
+    boolean stopProgressBar = true;
 
     private MediaPlayer mp;
     private MyPlayerStateChangeListener mPlayerStateChangeListener;
@@ -63,15 +69,60 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     private YouTubePlayer player;
     private static final int RECOVERY_REQUEST = 1;
     boolean playing = false;
+    boolean isClipPresent = true;
 
     Button mPlay;
     Button mPause;
     Button mStop;
 
+    //private ProgressDialog progressBar;
+    //private int progressBarStatus = 0;
+    //private Handler progressBarbHandler = new Handler();
+
+    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_video);
+
+        /*progressBar = new ProgressDialog(this);
+        progressBar.setCancelable(true);
+        progressBar.setMessage("File downloading ...");
+        progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressBar.setProgress(0);
+        progressBar.setMax(100);
+        progressBar.show();
+        progressBarStatus = 0;
+
+        new Thread(new Runnable() {
+            public void run() {
+                while (stopProgressBar) {
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    progressBarbHandler.post(new Runnable() {
+                        public void run() {
+                            progressBar.setIndeterminate(true);
+                            progressBar.setMessage("File downloading..");
+                        }
+                    });
+                }
+
+                if (!stopProgressBar) {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    progressBar.dismiss();
+                }
+            }
+        }).start();*/
+
         mPlay = (Button) findViewById(R.id.playButton);
         mPause = (Button) findViewById(R.id.pauseButton);
         mStop = (Button) findViewById(R.id.stopButton);
@@ -144,6 +195,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                         if(Integer.parseInt(clipMovie.clipAuthor) == Integer.parseInt(chosenAuthor)){
                             clipID.add(j, clipMovie.clipId);
                             clipStartTime.add(j, clipMovie.clipStartTime);
+                            clipFunction.add(j, clipMovie.clipFunction);
                             downloadURLs.add(j,apiBaseUrl + "clip?AppId=" + defaultAppId + "&Movie=" + MEDIA_ID + "&ClipId=" + clipID.get(j));
                             j++;
                         }
@@ -160,9 +212,28 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
             }
         });
 
+        for (int i=0; i<downloadURLs.size();i++) {
+            String url = downloadURLs.get(i);
+            String fileClipID = url.substring(url.lastIndexOf("=") + 1, url.length());
+            File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileClipID + ".mp3");
+            if (f.exists()){
+                isClipPresent = isClipPresent && true;
+            }
+            else {
+                isClipPresent = isClipPresent && false;
+            }
+        }
+
+        if (isClipPresent == true){
+            mPlay.setEnabled(true);
+            mPause.setEnabled(true);
+            mStop.setEnabled(true);
+        }
+
+        stopProgressBar = false;
+
         mPlayerStateChangeListener = new MyPlayerStateChangeListener();
         mPlaybackEventListener = new MyPlaybackEventListener();
-
 
         handler = new Handler();
         runnable = new Runnable() {
@@ -173,8 +244,15 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                         currentTime = (player.getCurrentTimeMillis()) / 1000;
                         Log.d("Current time is:", String.valueOf(currentTime));
                         if (currentTime == Math.ceil(nextClipStartTime)) {
-                            pauseAndPlayAudio();
-                            numberOfClipsRemaining--;
+                            nextClipFunction = getNextClipFunction();
+                            if (nextClipFunction != "desc_inline") {
+                                pauseAndPlayAudio();
+                                numberOfClipsRemaining--;
+                            }
+                            else {
+                                playAudio();
+                                numberOfClipsRemaining--;
+                            }
                         }
                     }
                 }
@@ -248,6 +326,11 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     public String getNextClipID(){
         activeAudioIndex = clipStartTime.size() - numberOfClipsRemaining;
         return clipID.get(activeAudioIndex);
+    }
+
+    public String getNextClipFunction(){
+        activeAudioIndex = clipStartTime.size() - numberOfClipsRemaining;
+        return clipFunction.get(activeAudioIndex);
     }
 
     private final class MyPlaybackEventListener implements YouTubePlayer.PlaybackEventListener {
@@ -348,6 +431,33 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         }
     }
 
+    public void playAudio(){
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 18, 0);
+
+        String audioFilePath = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + nextClipID + ".mp3");
+        Uri mediaURI = Uri.parse(audioFilePath);
+        mp = MediaPlayer.create(this,mediaURI);
+        mp.setLooping(false);
+        showMessage("Audio Start");
+        mp.start();
+
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
+        {
+            @Override
+            public void onCompletion(MediaPlayer mp)
+            {
+                mp.release();
+                showMessage("Audio Stopped");
+                if (isDescribed && (numberOfClipsRemaining > 0)) {
+                    nextClipStartTime = getNextClipStartTime();
+                    nextClipID = getNextClipID();
+                }
+                player.play();
+            }
+        });
+    }
+
     public void pauseAndPlayAudio(){
         player.pause();
 
@@ -357,13 +467,6 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         String audioFilePath = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + nextClipID + ".mp3");
         Uri mediaURI = Uri.parse(audioFilePath);
         mp = MediaPlayer.create(this,mediaURI);
-        //mp = new MediaPlayer();
-        /**try {
-            mp.setDataSource(audioFilePath);
-            mp.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }**/
         mp.setLooping(false);
         showMessage("Audio Start");
         mp.start();

@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ public class VideoList extends Activity {
         listView.setAdapter(adapter);
         listView.setTextFilterEnabled(true);
 
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        //findViewById(R.id.loadingPanel).setVisibility(View.GONE);
 
         // EditText in listview_main.xml for search functionality
         inputSearch = (EditText) findViewById(R.id.inputSearch);
@@ -128,7 +127,7 @@ public class VideoList extends Activity {
                     }
                 }
 
-                Toast.makeText(getApplicationContext(), movieMediaID, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), movieMediaID, Toast.LENGTH_LONG).show();
                 Bundle bundle = new Bundle();
                 bundle.putString("videoID", movieMediaID);
                 bundle.putString("movieID", movieID);

@@ -2,6 +2,7 @@ package com.youdescribe.sfsu.youdescribe;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -30,7 +31,6 @@ import android.os.UserHandle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Display;
-import android.widget.Toast;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -460,6 +460,11 @@ public class DvxApi extends Context {
                 e.printStackTrace();
             }
             try {
+                clip.clipFunction = clips.getJSONObject(i).getString("clipFunction");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
                 clip.clipFilename = clips.getJSONObject(i).getString("clipFilename");
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -546,6 +551,21 @@ public class DvxApi extends Context {
     }
 
     private class DownloadTask extends AsyncTask<ArrayList<String>, Void, Void>{
+        private ProgressDialog progressBar;
+        private int progressBarStatus = 0;
+        private Handler progressBarbHandler = new Handler();
+        boolean stopProgressBar = false;
+
+        @Override
+        protected void onPreExecute() {
+            progressBar = new ProgressDialog(activity);
+            progressBar.setCancelable(true);
+            progressBar.setMessage("File downloading ...");
+            progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressBar.setProgress(0);
+            progressBar.setMax(100);
+            progressBar.show();
+        }
 
         @Override
         protected Void doInBackground(ArrayList<String>... params) {
@@ -595,10 +615,15 @@ public class DvxApi extends Context {
             return null;
         }
 
+        @Override
         protected void onPostExecute(Void result) {
-            Toast.makeText(activity, "Clips downloaded!", Toast.LENGTH_LONG).show();
+            //Toast.makeText(activity, "Clips downloaded!", Toast.LENGTH_LONG).show();
+            if (progressBar.isShowing()) {
+                progressBar.dismiss();
+            }
             super.onPostExecute(result);
         }
+
     }
 
     public void downloadClips(String mediaID, String clipID, Activity activity){

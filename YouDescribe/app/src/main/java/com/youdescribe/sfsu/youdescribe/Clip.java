@@ -7,6 +7,7 @@ package com.youdescribe.sfsu.youdescribe;
 public class Clip {
     public String clipAuthor;
     public String clipChapter;
+    public String clipFunction;
     public String clipFilename;
     public String clipId;
     public String clipStartTime;
