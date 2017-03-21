@@ -453,7 +453,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                     nextClipStartTime = getNextClipStartTime();
                     nextClipID = getNextClipID();
                 }
-                player.play();
+                //player.play();
             }
         });
     }

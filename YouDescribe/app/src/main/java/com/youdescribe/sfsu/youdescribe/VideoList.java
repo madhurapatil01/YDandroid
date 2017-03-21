@@ -1,10 +1,14 @@
 package com.youdescribe.sfsu.youdescribe;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -13,6 +17,8 @@ import android.widget.ListView;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by madhura on 11/30/2016.
@@ -35,6 +41,18 @@ public class VideoList extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.videos_list);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)==
+                    PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "onCreate: permission granted");
+                }
+            else {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        2);
+            }
+        }
+
         final Intent videoMediaIdIntent = new Intent(this, PlayVideo.class);
 
         // Get ListView object from xml
