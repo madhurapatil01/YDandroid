@@ -2,4 +2,5 @@
     <string name="app_name">YouDescribe</string>
     <string name="dvx_videos_page_title">YouDescribe Videos</string>
     <string name="youtube_videos_page_title">YouTube Videos</string>
+    <string name="search_hint">Search Videos</string>
 </resources>

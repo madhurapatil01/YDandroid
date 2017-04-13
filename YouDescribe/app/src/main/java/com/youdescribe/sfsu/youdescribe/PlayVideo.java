@@ -32,7 +32,7 @@ import java.util.List;
 public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener {
     public static final String API_KEY = "AIzaSyDrZV4nWCVsTSHFP-7PXbJYPE9ynNOTiQ0";
     private String defaultAppId = "ydesc";
-    private String apiBaseUrl = "http://dvxtest.ski.org:8080/dvx2Api/";
+    private String apiBaseUrl = "http://dvx.ski.org:8080/dvx2Api/";
     public static String VIDEO_ID = "";
     public static String MEDIA_ID = "";
     public static String AUTHOR_ID = "";
@@ -69,6 +69,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     private YouTubePlayer player;
     private static final int RECOVERY_REQUEST = 1;
     boolean playing = false;
+    boolean paused = false;
     boolean isClipPresent = true;
 
     Button mPlay;
@@ -84,44 +85,6 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_video);
-
-        /*progressBar = new ProgressDialog(this);
-        progressBar.setCancelable(true);
-        progressBar.setMessage("File downloading ...");
-        progressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressBar.setProgress(0);
-        progressBar.setMax(100);
-        progressBar.show();
-        progressBarStatus = 0;
-
-        new Thread(new Runnable() {
-            public void run() {
-                while (stopProgressBar) {
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    progressBarbHandler.post(new Runnable() {
-                        public void run() {
-                            progressBar.setIndeterminate(true);
-                            progressBar.setMessage("File downloading..");
-                        }
-                    });
-                }
-
-                if (!stopProgressBar) {
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    progressBar.dismiss();
-                }
-            }
-        }).start();*/
 
         mPlay = (Button) findViewById(R.id.playButton);
         mPause = (Button) findViewById(R.id.pauseButton);
@@ -312,6 +275,8 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                 player.seekToMillis(0);
             }
         });
+        player.setManageAudioFocus(true);
+        player.getFullscreenControlFlags();
     }
 
     private void showMessage(String message) {
@@ -338,20 +303,22 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         @Override
         public void onPlaying() {
             // Called when playback starts, either due to user action or call to play().
-            showMessage("Playing");
-
+            //showMessage("Playing");
+            playMusic();
         }
 
         @Override
         public void onPaused() {
             // Called when playback is paused, either due to user action or call to pause().
             //showMessage("Paused");
+            pauseMusic();
         }
 
         @Override
         public void onStopped() {
             // Called when playback stops for a reason other than being paused.
             //showMessage("Stopped");
+            stopMusic();
         }
 
         @Override
@@ -406,11 +373,15 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
 
     protected void onDestroy(){
         super.onDestroy();
+        if (mp != null) {
+            mp.stop();
+        }
         handler.removeCallbacks(runnable);
     }
 
     public void playMusic(){
-        if(!playing){
+        //showMessage("Play Music");
+        if(paused&&(mp!=null)){
             mp.setLooping(true);
             mp.start();
             playing = true;
@@ -418,14 +389,17 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     }
 
     public void pauseMusic(){
-        if(playing){
+        //showMessage("Pause Music");
+        if(playing&&(mp!=null)){
             mp.pause();
             playing = false;
+            paused = true;
         }
     }
 
     public void stopMusic(){
-        if(playing){
+        //showMessage("Stop Music");
+        if(playing&&(mp!=null)){
             mp.stop();
             playing = false;
         }
@@ -433,14 +407,17 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
 
     public void playAudio(){
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 18, 0);
+        int volume_level = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume_level, 0);
 
         String audioFilePath = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + nextClipID + ".mp3");
         Uri mediaURI = Uri.parse(audioFilePath);
         mp = MediaPlayer.create(this,mediaURI);
+        //mp.setVolume(0.09f, 0.09f);
         mp.setLooping(false);
         showMessage("Audio Start");
         mp.start();
+        //playing = true;
 
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
         {
@@ -462,14 +439,17 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         player.pause();
 
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 18, 0);
+        int volume_level = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume_level, 0);
 
         String audioFilePath = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + nextClipID + ".mp3");
         Uri mediaURI = Uri.parse(audioFilePath);
         mp = MediaPlayer.create(this,mediaURI);
+        //mp.setVolume(0.09f, 0.09f);
         mp.setLooping(false);
         showMessage("Audio Start");
         mp.start();
+        //playing = true;
 
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
         {

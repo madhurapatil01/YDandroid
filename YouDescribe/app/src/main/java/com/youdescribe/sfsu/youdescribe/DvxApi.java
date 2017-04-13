@@ -64,8 +64,8 @@ public class DvxApi extends Context {
 
     final Context mContext = this;
     private String defaultAppId = "ydesc";
-    private String apiBaseUrl = "http://dvxtest.ski.org:8080/dvx2Api/"; //test
-    //private String apiBaseUrl = "http://dvx.ski.org:8080/dvx2Api/"; //main
+    // private String apiBaseUrl = "http://dvxtest.ski.org:8080/dvx2Api/"; //test
+    private String apiBaseUrl = "http://dvx.ski.org:8080/dvx2Api/"; //main
     Document mainDoc = null;
     ArrayList<Movie> searchTableMovies = new ArrayList<>();
     ArrayList<Movie> movies = new ArrayList<Movie>();
@@ -262,11 +262,21 @@ public class DvxApi extends Context {
                     outerObj = jsonObj.getJSONObject("clips");
                     outerArray = outerObj.getJSONArray("clip");
                 } catch (JSONException e) {
+                    if (outerObj != null ){
+                        try {
+                            innerObj = outerObj.getJSONObject("clip");
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
                     e.printStackTrace();
                 }
                 if (outerArray != null){
                     dataAsync = getClipsFromJSON(outerArray);
-                }else {
+                }else if (innerObj != null){
+                    dataAsync = getClipFromJSON(innerObj);
+                }
+                else {
                     return null;
                 }
             }
@@ -443,6 +453,58 @@ public class DvxApi extends Context {
             movieList.add(movie);
         }
         return movieList;
+    }
+
+    public static ArrayList<Clip> getClipFromJSON(JSONObject clips){
+        final ArrayList<Clip> clipList = new ArrayList<>();
+        Clip clip = new Clip();
+        try {
+            clip.clipAuthor = clips.getString("clipAuthor");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.clipChapter = clips.getString("clipChapter");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.clipFunction = clips.getString("clipFunction");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.clipFilename = clips.getString("clipFilename");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.clipId = clips.getString("clipId");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.clipStartTime = clips.getString("clipStartTime");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.clipType = clips.getString("clipType");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.languageFk = clips.getString("languageFk");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            clip.movieFk = clips.getString("movieFk");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        clipList.add(clip);
+        return clipList;
     }
 
     public static ArrayList<Clip> getClipsFromJSON(JSONArray clips){

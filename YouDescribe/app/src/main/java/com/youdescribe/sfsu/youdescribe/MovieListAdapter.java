@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,7 +41,10 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Movie> mDataSource;
     private ArrayList<Movie> mOriginalValues;
     private ArrayList<Movie> mDisplayedValues;
+    ArrayList<User> users = new ArrayList<>();
+    HashMap<String, String> userIDNames = new HashMap<String, String>();
     int maxYouTubeResults = 5;
+    int maxMoviesLoaded = 20;
     String apiKey = "AIzaSyAI9H-v1Zyt1bN6W7fSz-Zl0jrfU0UYzho";
     String youTubeURLString = "https://www.googleapis.com/youtube/v3/search?part=snippet&fields=items(id,snippet(title,channelTitle))&type=video&maxResults=" + maxYouTubeResults + "&key=" + apiKey + "&q=";
 
@@ -70,6 +74,8 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
+        //if(reachedEndOfList(position)) loadMoreData();
         // Get view for row item
         View rowView = mInflater.inflate(R.layout.list_item, parent, false);
 
@@ -108,6 +114,7 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
     @Override
     public Filter getFilter() {
         Filter filter = new Filter() {
+            DvxApi clip = new DvxApi();
 
             @SuppressWarnings("unchecked")
             @Override
@@ -133,8 +140,27 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
                     ArrayList<Movie> FilteredArrList = new ArrayList<Movie>();
                     constraint = constraint.toString().toLowerCase();
                     for (int i = 0; i < mOriginalValues.size(); i++) {
-                        String data = mOriginalValues.get(i).movieName;
-                        if ((data!= null) && (data.toLowerCase().contains(constraint.toString()))) {
+                        String searchMovieName = mOriginalValues.get(i).movieName;
+                        String searchMediaID = mOriginalValues.get(i).movieMediaId;
+                        /*final String searchAuthorID = mOriginalValues.get(i).authorID;
+                        HashMap<String, String> mUsers = new HashMap<String, String>() {{
+                            put("UserId", searchAuthorID);
+                        }};
+                        String searchAuthorName = "";
+                        if (searchAuthorID!=null){
+                            if(!userIDNames.containsKey(searchAuthorID)){
+                                users = clip.getUsers(mUsers);
+                                if (users != null) {
+                                    searchAuthorName = users.get(0).userHandle;
+                                }
+                            }else {
+                                searchAuthorName = userIDNames.get(searchAuthorID);
+                            }
+                        }*/
+
+                        // if the search text is not null and contains Movie Name or Author ID or Media ID
+                        if ((searchMovieName!= null) && ((searchMovieName.toLowerCase().contains(constraint.toString())) ||
+                                (searchMediaID.toLowerCase().contains(constraint.toString())))) {
                             Movie tempObj = new Movie();
                             tempObj.authorName = mOriginalValues.get(i).authorName;
                             tempObj.isDescribed = mOriginalValues.get(i).isDescribed;
@@ -154,7 +180,7 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
                     ArrayList<Movie> youTubeMovies = new ArrayList<Movie>();
                     try {
                         if(constraint.toString().contains(" ")){
-                            constraint.toString().replace(" ","+");
+                            constraint = constraint.toString().replace(" ","+");
                         }
                         youTubeMovies = new YouTubeVideosSearch().execute(youTubeURLString+constraint).get();
                     } catch (InterruptedException e) {
@@ -242,5 +268,6 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
             super.onPostExecute(result);
         }
     }
+
 
 }
