@@ -34,7 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Created by madhura on 12/24/2016.
  */
 
-public class MovieListAdapter extends BaseAdapter implements Filterable {
+public class MovieListAdapter extends BaseAdapter implements Filterable{
 
     private Context mContext;
     private LayoutInflater mInflater;
@@ -107,6 +107,9 @@ public class MovieListAdapter extends BaseAdapter implements Filterable {
         //4
         String img_url="http://img.youtube.com/vi/"+movie.movieMediaId+"/0.jpg";
         Picasso.with(mContext).load(img_url).placeholder(R.mipmap.ic_launcher).into(thumbnailImageView);
+
+        View overflow = rowView.findViewById(R.id.menu_overflow);
+        overflow.setOnClickListener(new OnMovieOverflowSelectedListener(mContext, movie));
 
         return rowView;
     }

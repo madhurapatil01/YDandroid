@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-
 /**
  * Created by madhura on 4/3/2017.
  */
@@ -30,85 +29,32 @@ import java.util.HashMap;
 public class Tab1 extends Fragment{
 
     ListView listView;
+    ArrayList<? extends Movie> madhuraMovies = new ArrayList<>();
     ArrayList<Movie> movies = new ArrayList<>();
-    ArrayList<Movie> moviesInList = new ArrayList<>();
+    ArrayList<? extends Movie> moviesInList = new ArrayList<>();
+    ArrayList<Movie> tempMoviesList = new ArrayList<>();
     ArrayList<Movie> describedMovies = new ArrayList<>();
     EditText inputSearch;
     MovieListAdapter adapter;
     int maxYouTubeResults = 5;
+    int loadMoviesBy = 10;
     String apiKey = "AIzaSyAI9H-v1Zyt1bN6W7fSz-Zl0jrfU0UYzho";
     String youTubeURLString = "https://www.googleapis.com/youtube/v3/search?part=snippet&fields=items(id,snippet(title,channelTitle))&type=video&maxResults=" + maxYouTubeResults + "&key=" + apiKey + "&q=";
 
     public Tab1() throws MalformedURLException {
     }
 
-    /*@Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        // What i have added is this
-        setHasOptionsMenu(true);
-    }*/
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get the intent, verify the action and get the query
-        /*Intent intent = getActivity().getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            doSearch(query);
+        //moviesInList = getArguments().getParcelableArrayList("valuesArray");
+
+        /*Bundle args = getArguments();
+        if (args != null) {
+            madhuraMovies = args.getParcelableArrayList("arraylist");
         }*/
     }
-
-    /*@Override
-    public void onCreateOptionsMenu (Menu menu, MenuInflater inflater){
-        //inflater.inflate(R.menu.menu_main_activity__tabbed_views, menu);
-        MenuItem item = menu.findItem(R.id.menu_search);
-        SearchView sv = new SearchView(getActivity());
-        //SearchView sv = new SearchView(((MainActivity_TabbedViews) getActivity()).getSupportActionBar().getThemedContext());
-        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
-        MenuItemCompat.setActionView(item, sv);
-        //sv.setOnQueryTextListener(this);
-        sv.setIconifiedByDefault(false);
-        sv.setOnSearchClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("TAG", "Clicked: ");
-            }
-        });
-        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                adapter.getFilter().filter(query.toString());
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText.toString());
-                return true;
-            }
-        });
-
-        MenuItemCompat.setOnActionExpandListener(item, new MenuItemCompat.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                // Do something when collapsed
-                Log.d("TAG","Closed: ");
-                return true;  // Return true to collapse action view
-            }
-
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                // Do something when expanded
-                Log.d("TAG","Opened: ");
-                return true;  // Return true to expand action view
-            }
-        });
-
-        super.onCreateOptionsMenu(menu,inflater);
-    }*/
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -128,7 +74,7 @@ public class Tab1 extends Fragment{
             }
         }
 
-        final Intent videoMediaIdIntent = new Intent(getActivity(), PlayVideo.class);
+        final Intent videoMediaIdIntent = new Intent(getActivity(), PlayVideo_new.class);
 
         // Get ListView object from xml
         listView = (ListView) v.findViewById(R.id.list1);
@@ -139,26 +85,32 @@ public class Tab1 extends Fragment{
             put("Language", "English");
         }};
 
+
+        /*Log.d("Process", "Getting Movies");
         // Retrieve list of movies
         movies = movie.getMovies(mMovies);
 
+        Log.d("Process", "Getting Movies Search Table");
         // Retrieve list of movies from the search table
         moviesInList = movie.searchTable(mMovies);
 
-        for (int i = 0; i<movies.size(); i++){
-            Boolean matchFlag = false;
-            Movie movieTemp = movies.get(i);
-            for(Movie m : moviesInList){
-                if(m.movieMediaId.equals(movieTemp.movieMediaId)){
-                    matchFlag = true;
+        Log.d("Process", "Comparing Movies");
+        for (Movie movie1 : movies){
+            for (Movie movie2 : moviesInList){
+                if(movie1.movieMediaId.equals(movie2.movieMediaId)){
+                    tempMoviesList.add(movie1);
                 }
-            }
-            if (matchFlag == false){
-                moviesInList.add(movieTemp);
             }
         }
 
-        for (int i=0; i< movies.size(); i++){
+        for (Movie movie1:tempMoviesList){
+            moviesInList.add(movie1);
+        }*/
+
+        moviesInList = MainActivity_TabbedViews_2.moviesInList;
+
+        Log.d("Process", "Separating described movies");
+        for (int i=0; i<moviesInList.size(); i++){
             Movie newMovie = new Movie();
             if (moviesInList.get(i).isDescribed == true){
                 newMovie = moviesInList.get(i);
@@ -193,15 +145,18 @@ public class Tab1 extends Fragment{
 
                 String movieID = null;
                 String authorId = null;
+                String authorName = null;
 
                 if(selectedVideo.isDescribed) {
                     ArrayList<Movie> tempMovie = movie.searchMovie(mMovies);
                     movieID = tempMovie.get(0).movieId;
                     if (selectedVideo.authorID==null){
                         authorId = tempMovie.get(0).authorID;
+                        authorName = tempMovie.get(0).authorName;
                     }
                     else {
                         authorId = selectedVideo.authorID;
+                        authorName = selectedVideo.authorName;
                     }
                 }
 
@@ -210,6 +165,9 @@ public class Tab1 extends Fragment{
                 bundle.putString("videoID", movieMediaID);
                 bundle.putString("movieID", movieID);
                 bundle.putString("authorId", authorId);
+                bundle.putString("authorName", authorName);
+                bundle.putString("videoTitle", selectedVideo.movieName);
+                bundle.putString("videoDescription", selectedVideo.movieDescription);
                 videoMediaIdIntent.putExtras(bundle);
 
                 startActivity(videoMediaIdIntent);
@@ -250,7 +208,29 @@ public class Tab1 extends Fragment{
 
         }*/
 
+        /*listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                addItems();
+            }
+        });*/
+
         return v;
     }
 
+    public static Tab1 newInstance(int index) throws MalformedURLException {
+        Tab1 f = new Tab1();
+
+        // Supply index input as an argument.
+        Bundle args = new Bundle();
+        args.putInt("index1", index);
+        f.setArguments(args);
+
+        return f;
+    }
 }

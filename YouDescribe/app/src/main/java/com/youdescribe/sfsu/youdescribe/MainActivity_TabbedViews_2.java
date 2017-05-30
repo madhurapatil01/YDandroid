@@ -8,11 +8,20 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.widget.EditText;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-public class MainActivity_TabbedViews extends AppCompatActivity {
+public class MainActivity_TabbedViews_2 extends AppCompatActivity {
+
+    ArrayList<Movie> movies = new ArrayList<>();
+    public static ArrayList<Movie> moviesInList = new ArrayList<>();
+    ArrayList<Movie> tempMoviesList = new ArrayList<>();
+    ArrayList<Movie> describedMovies = new ArrayList<>();
+    MovieListAdapter adapter;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -29,6 +38,7 @@ public class MainActivity_TabbedViews extends AppCompatActivity {
      */
     private ViewPager mViewPager;
     EditText searchTextBox;
+    Bundle movieBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,40 +57,36 @@ public class MainActivity_TabbedViews extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        final DvxApi movie = new DvxApi();
+        final HashMap<String, String> mMovies = new HashMap<String, String>() {{
+            put("Language", "English");
+        }};
+
+        Log.d("Process", "Getting Movies");
+        // Retrieve list of movies
+        movies = movie.getMovies(mMovies);
+
+        Log.d("Process", "Getting Movies Search Table");
+        // Retrieve list of movies from the search table
+        moviesInList = movie.searchTable(mMovies);
+
+        Log.d("Process", "Comparing Movies");
+        for (Movie movie1 : movies){
+            for (Movie movie2 : moviesInList){
+                if(movie1.movieMediaId.equals(movie2.movieMediaId)){
+                    tempMoviesList.add(movie1);
+                }
+            }
+        }
+
+        for (Movie movie1:tempMoviesList){
+            moviesInList.add(movie1);
+        }
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
     }
-
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main_activity__tabbed_views, menu);
-
-        // Get the SearchView and set the searchable configuration
-        //SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        //SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
-        // Assumes current activity is the searchable activity
-        //searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        // searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
-
-        return true;
-    }*/
-
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.menu_search) {
-            searchTextBox.setEnabled(true);
-            //onSearchRequested();
-        }
-        return super.onOptionsItemSelected(item);
-    }*/
 
 
     /**

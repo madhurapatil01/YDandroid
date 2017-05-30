@@ -3,4 +3,7 @@
     <string name="dvx_videos_page_title">YouDescribe Videos</string>
     <string name="youtube_videos_page_title">YouTube Videos</string>
     <string name="search_hint">Search Videos</string>
+    <string name="record_audio">Create Description</string>
+    <string name="share_via">Share Via</string>
+    <string name="movie_info">Info</string>
 </resources>

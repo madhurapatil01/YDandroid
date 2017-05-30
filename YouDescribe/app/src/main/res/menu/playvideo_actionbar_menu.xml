@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.youdescribe.sfsu.youdescribe.MainActivity_TabbedViews">
+    <item android:id="@+id/shareMenu"
+        android:showAsAction="ifRoom"
+        android:title="@string/share_via"
+        android:actionProviderClass=
+            "android.widget.ShareActionProvider" />
+    <item android:id="@+id/infoButton"
+        android:showAsAction="ifRoom"
+        android:title="@string/movie_info" />
+</menu>

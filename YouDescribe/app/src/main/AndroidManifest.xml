@@ -15,6 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".PlayVideo" />
+        <activity android:name=".PlayVideo_new"
+            android:parentActivityName=".MainActivity_TabbedViews"/>
         <activity
             android:name=".VideoList"
             android:windowSoftInputMode="stateHidden">
@@ -24,7 +26,7 @@
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".LogIn" />
         <activity
-            android:name=".MainActivity_TabbedViews"
+            android:name=".MainActivity_TabbedViews_2"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
@@ -34,10 +36,13 @@
                 android:resource="@xml/searchable"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MovieInfo"
+            android:theme="@style/AppTheme" />
+        <activity android:name=".Author_Video"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

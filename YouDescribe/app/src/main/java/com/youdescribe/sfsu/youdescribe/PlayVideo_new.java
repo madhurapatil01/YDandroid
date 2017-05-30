@@ -10,6 +10,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.NavUtils;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,15 +23,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.ShareActionProvider;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
-import com.google.android.youtube.player.YouTubePlayerView;
+import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,13 +37,16 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener {
+public class PlayVideo_new extends AppCompatActivity implements YouTubePlayer.OnInitializedListener {
     public static final String API_KEY = "AIzaSyDrZV4nWCVsTSHFP-7PXbJYPE9ynNOTiQ0";
     private String defaultAppId = "ydesc";
     private String apiBaseUrl = "http://dvx.ski.org:8080/dvx2Api/";
     public static String VIDEO_ID = "";
     public static String MEDIA_ID = "";
     public static String AUTHOR_ID = "";
+    public static String VIDEO_TITLE = "";
+    public static String VIDEO_DESCRIPTION = "";
+    public static String AUTHOR_NAME = "";
     public int authorPosition;
     ArrayList<Clip> clips = new ArrayList<>();
     ArrayList<String> authorIDs = new ArrayList<String>();
@@ -57,6 +63,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     Handler handler;
     Runnable runnable;
     AudioManager audioManager;
+    Toolbar mActionBar;
 
     double currentTime = 0;
     double nextClipStartTime = 0;
@@ -82,10 +89,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     Button mPlay;
     Button mPause;
     Button mStop;
-
-    //private ProgressDialog progressBar;
-    //private int progressBarStatus = 0;
-    //private Handler progressBarbHandler = new Handler();
+    Intent movieInfoIntent;
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB)
     @Override
@@ -93,18 +97,35 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play_video);
 
+        movieInfoIntent = new Intent(PlayVideo_new.this, MovieInfo.class);
+
+        //YouTubePlayerSupportFragment frag =(YouTubePlayerSupportFragment) getSupportFragmentManager().findFragmentById(R.id.youtube_fragment);
+
         mPlay = (Button) findViewById(R.id.playButton);
         mPause = (Button) findViewById(R.id.pauseButton);
         mStop = (Button) findViewById(R.id.stopButton);
 
+        mActionBar = (Toolbar) findViewById(R.id.toolbar1);
+        if (mActionBar != null)
+        {
+            setSupportActionBar(mActionBar);
+        }
+
+        getSupportActionBar().setTitle(getResources().getString(R.string.app_name));
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setHomeButtonEnabled(true);
+
         /** Initializing YouTube Player View **/
-        YouTubePlayerView youTubePlayerView = (YouTubePlayerView) findViewById(R.id.youtube_fragment);
-        youTubePlayerView.initialize(API_KEY, this);
+        YouTubePlayerSupportFragment youTubePlayerFragment = (YouTubePlayerSupportFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.youtube_fragment);
+        youTubePlayerFragment.initialize(API_KEY, this);
         Bundle bundle = getIntent().getExtras();
         VIDEO_ID = bundle.getString("videoID");
         MEDIA_ID = bundle.getString("movieID");
         AUTHOR_ID = bundle.getString("authorId");
-
+        VIDEO_TITLE = bundle.getString("videoTitle");
+        VIDEO_DESCRIPTION = bundle.getString("videoDescription");
+        AUTHOR_NAME = bundle.getString("authorName");
 
         audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -193,7 +214,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
                         }
                     }
                 }
-                clip.downloadAllClips(downloadURLs, PlayVideo.this);
+                clip.downloadAllClips(downloadURLs, PlayVideo_new.this);
                 numberOfClipsRemaining = clipStartTime.size();
                 isDescribed = true;
             }
@@ -267,9 +288,10 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     }
 
     @Override
-    public void onInitializationSuccess(Provider provider, final YouTubePlayer player, boolean wasRestored) {
+    public void onInitializationSuccess(Provider provider, YouTubePlayer YPlayer, boolean wasRestored) {
+        player = YPlayer;
         isInitialized = true;
-        this.player = player;
+        //this.player = player;
         /** add listeners to YouTubePlayer instance **/
         player.setPlayerStateChangeListener(mPlayerStateChangeListener);
         player.setPlaybackEventListener(mPlaybackEventListener);
@@ -513,7 +535,7 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.playvideo_actionbar_menu, menu);
         MenuItem item = menu.findItem(R.id.shareMenu);
-        mShareActionProvider = (ShareActionProvider) item.getActionProvider();
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
         return true;
     }
 
@@ -523,5 +545,34 @@ public class PlayVideo extends YouTubeBaseActivity implements YouTubePlayer.OnIn
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(shareIntent);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+
+            case R.id.infoButton:
+                Bundle bundle = new Bundle();
+                bundle.putString("videoTitle", VIDEO_TITLE);
+                bundle.putString("videoDescription", VIDEO_DESCRIPTION);
+                bundle.putString("authorName", AUTHOR_NAME);
+                startActivity(movieInfoIntent);
+                return true;
+
+            case R.id.shareMenu:
+                Intent iShare = new Intent(android.content.Intent.ACTION_SEND);
+                iShare.setType("text/plain");
+                iShare.putExtra(Intent.EXTRA_SUBJECT, "YouTube link:");
+                String youTubeLink = "https://www.youtube.com/watch?v=" + VIDEO_ID;
+                iShare.putExtra(Intent.EXTRA_TEXT, youTubeLink);
+                startActivity(Intent.createChooser(iShare,"Share via"));
+                return true;
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
