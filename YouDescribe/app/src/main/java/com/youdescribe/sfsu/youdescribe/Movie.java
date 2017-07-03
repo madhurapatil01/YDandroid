@@ -18,6 +18,7 @@ public class Movie {
     public String authorID;
     public String authorName;
     public Boolean isDescribed = false;
+    public Boolean ytSearched = false;
 
     /*Comparator for sorting the list by Movie Created date*/
     public static Comparator<Movie> MovieDateComparator = new Comparator<Movie>() {

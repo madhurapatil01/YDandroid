@@ -69,7 +69,6 @@ public class GetYoutubeDetails {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             try {
                 jObject = new JSONObject(responseString);
                 items = jObject.getJSONArray("items");

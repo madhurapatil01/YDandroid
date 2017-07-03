@@ -257,6 +257,7 @@ public class MovieListAdapter extends BaseAdapter implements Filterable{
                     searchedYTVideo.movieMediaId = id.getString("videoId");
                     JSONObject snippet = items.getJSONObject(i).getJSONObject("snippet");
                     searchedYTVideo.movieName = snippet.getString("title");
+                    searchedYTVideo.ytSearched = true;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

@@ -29,15 +29,12 @@ import java.util.HashMap;
 public class Tab1 extends Fragment{
 
     ListView listView;
-    ArrayList<? extends Movie> madhuraMovies = new ArrayList<>();
-    ArrayList<Movie> movies = new ArrayList<>();
     ArrayList<? extends Movie> moviesInList = new ArrayList<>();
-    ArrayList<Movie> tempMoviesList = new ArrayList<>();
     ArrayList<Movie> describedMovies = new ArrayList<>();
     EditText inputSearch;
     MovieListAdapter adapter;
     int maxYouTubeResults = 5;
-    int loadMoviesBy = 10;
+    int loadMoviesBy = 25;
     String apiKey = "AIzaSyAI9H-v1Zyt1bN6W7fSz-Zl0jrfU0UYzho";
     String youTubeURLString = "https://www.googleapis.com/youtube/v3/search?part=snippet&fields=items(id,snippet(title,channelTitle))&type=video&maxResults=" + maxYouTubeResults + "&key=" + apiKey + "&q=";
 
@@ -223,14 +220,4 @@ public class Tab1 extends Fragment{
         return v;
     }
 
-    public static Tab1 newInstance(int index) throws MalformedURLException {
-        Tab1 f = new Tab1();
-
-        // Supply index input as an argument.
-        Bundle args = new Bundle();
-        args.putInt("index1", index);
-        f.setArguments(args);
-
-        return f;
-    }
 }

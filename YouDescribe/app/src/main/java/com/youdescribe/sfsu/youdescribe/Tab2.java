@@ -28,10 +28,8 @@ import java.util.HashMap;
 public class Tab2 extends Fragment{
 
     ListView listView;
-    ArrayList<Movie> movies = new ArrayList<>();
     ArrayList<? extends Movie> moviesInList = new ArrayList<>();
     ArrayList<Movie> describedMovies = new ArrayList<>();
-    ArrayList<Movie> tempMoviesList = new ArrayList<>();
     EditText inputSearch;
     MovieListAdapter adapter;
     int maxYouTubeResults = 5;
@@ -269,16 +267,5 @@ public class Tab2 extends Fragment{
         });
 
         return v;
-    }
-
-    public static Tab2 newInstance(int index) throws MalformedURLException {
-        Tab2 f = new Tab2();
-
-        // Supply index input as an argument.
-        Bundle args = new Bundle();
-        args.putInt("index2", index);
-        f.setArguments(args);
-
-        return f;
     }
 }
